@@ -1,0 +1,4 @@
+# requirements.txt
+
+# Python version: 3.12 (specify in your environment, not here)
+torch==2.3.0
