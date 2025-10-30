@@ -38,10 +38,10 @@ class Trainer:
 
 # 1. Initialize model, loss, optimizer
 model = SentenceEmbedingClosnesnessModel()
-criterion = nn.BCEWithLogitsLoss()   # or MSELoss, depending on target
+criterion = nn.MSELoss()    #nn.BCEWithLogitsLoss()   # or MSELoss, depending on target
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
-num_epochs = 10
+num_epochs = 20
 batch_size = 32
 
 trainer = Trainer(model, optimizer, criterion)
@@ -51,3 +51,6 @@ for epoch in range(num_epochs):
     train_loss = trainer.train_epoch(dataloader)
     val_loss = trainer.eval_epoch(dataloader)
     print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+
+#Save MySentenceEmbedding part of the model
+torch.save(model.sentence_embedding.state_dict(), 'models/sentence_embedding_model.pth')
