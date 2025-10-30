@@ -2,12 +2,11 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 
-
-def _load_file(path : str) -> torch.Tensor:
+def _load_file(path : str, padding_to = 68):
     with open(path, 'r') as f:
         data = f.read().splitlines()
     data = [data_line.split() for data_line in data]
-    max_len = max(int(line[0]) for line in data)
+    max_len = max(max(int(line[0]) for line in data),padding_to)
     count = len(data)
     token_dim = int(data[0][1])
     print(f"Count: {count}, Max Length: {max_len}, Token Dimension: {token_dim}")
@@ -18,36 +17,28 @@ def _load_file(path : str) -> torch.Tensor:
     arr = arr.view(count, max_len, token_dim)
     return arr
 
+def save_files_as_torch_tensor(input_path1: str,input_path2: str,  output_path: str):
+    data1 = _load_file(input_path1)
+    data2 = _load_file(input_path2)
 
-def save_file_as_torch_tensor(input_path: str, output_path: str):
-    data = _load_file(input_path)
+    data = torch.cat((data1, data2), dim=1)
+    data = data.view(data.shape[0], -1, 2, data.shape[2])  # (count, seq_len, 2, token_dim)
+    print("data dimensions: ", data.shape, " saving to:", output_path)
+    torch.save(data, output_path)
+
+def load_y(path: str) -> torch.Tensor:
+    with open(path, 'r') as f:
+        data = f.read().splitlines()
+    data = [float(line) for line in data]
+    return torch.tensor(data, dtype=torch.float32)
+
+def save_y_as_torch_tensor(input_path: str, output_path: str):
+    data = load_y(input_path)
+    print("label data dimensions: ", data.shape, " saving to:", output_path)
     torch.save(data, output_path)
 
 
-save_file_as_torch_tensor('data/sentence_pack_1.dat', 'data/sentence_pack_1.pt')
-save_file_as_torch_tensor('data/sentence_pack_2.dat', 'data/sentence_pack_2.pt')
+save_files_as_torch_tensor('data/sentence_pack_1.dat', 'data/sentence_pack_2.dat','data/sentence_pack.pt')
 
 
-# data = _load_file('data/sentence_pack_1.dat')
-# print("First item:", data[0][0][0:20])
-# print("data dimensions:", data.shape)
-
-class SentenceDataset(Dataset):
-    def __init__(self, path='data/sentence_pack_1.dat', transform=None):
-        self.data = _load_file(path)
-        self.transform = transform
-
-    def __len__(self):
-        if isinstance(self.data, list):
-            return len(self.data)
-        return self.data.shape[0]
-
-    def __getitem__(self, idx):
-        item = self.data[idx]
-        if self.transform:
-            item = self.transform(item)
-        return item
-
-
-def make_loader(path='data/sentence_pack_1.dat', batch_size=32, shuffle=True, num_workers=0):
-    return DataLoader(SentenceDataset(path), batch_size=batch_size, shuffle=shuffle, num_workers=num_workers)
+save_y_as_torch_tensor('data/label_pack.dat', 'data/label_pack.pt')
