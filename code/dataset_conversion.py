@@ -22,7 +22,7 @@ def save_files_as_torch_tensor(input_path1: str,input_path2: str,  output_path: 
     data2 = _load_file(input_path2)
 
     data = torch.cat((data1, data2), dim=1)
-    data = data.view(data.shape[0], -1, 2, data.shape[2])  # (count, seq_len, 2, token_dim)
+    data = data.view(data.shape[0], 2, -1, data.shape[2])  # (count, seq_len, 2, token_dim)
     print("data dimensions: ", data.shape, " saving to:", output_path)
     torch.save(data, output_path)
 
