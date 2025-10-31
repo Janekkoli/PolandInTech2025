@@ -41,7 +41,7 @@ model = SentenceEmbedingClosnesnessModel()
 criterion = nn.MSELoss()    #nn.BCEWithLogitsLoss()   # or MSELoss, depending on target
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
-num_epochs = 20
+num_epochs = 100
 batch_size = 32
 
 trainer = Trainer(model, optimizer, criterion)
@@ -49,8 +49,9 @@ dataset = SentencePackDataset()
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 for epoch in range(num_epochs):
     train_loss = trainer.train_epoch(dataloader)
-    val_loss = trainer.eval_epoch(dataloader)
-    print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
+    if epoch % 10 == 0:
+        val_loss = trainer.eval_epoch(dataloader)
+        print(f"Epoch {epoch+1}/{num_epochs}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}")
 
 #Save MySentenceEmbedding part of the model
-torch.save(model.sentence_embedding.state_dict(), 'models/sentence_embedding_model.pth')
+torch.save(model.sentence_embedding.state_dict(), 'models/sentence_embedding_model.bin')
