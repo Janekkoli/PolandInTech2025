@@ -1,25 +1,19 @@
 import torch
 from torch import nn
 
-
 class MySentenceEmbedding(nn.Module):
-    def __init__(self, embed_dim=768, hidden_dim=30, reduce_size = 64):
+    def __init__(self, embed_dim=768, hidden_dim = 30, reduce_size = 64):
         super().__init__()
-        hidden_dim = hidden_dim
         self.reduceLayer = nn.Linear(embed_dim, reduce_size)
-        self.attention = nn.Sequential(
-            nn.Linear(reduce_size, hidden_dim),
-            nn.Tanh(),
-            nn.Linear(hidden_dim, 1)
-        )
+        self.gru = nn.GRU(reduce_size, hidden_dim, batch_first=True, bidirectional=True)
+        self.projection = nn.Linear(hidden_dim * 2, hidden_dim)
 
     def forward(self, x):
         # x: [batch, seq, embed_dim]
         x = self.reduceLayer(x)  # [batch, seq, reduce_size]
-        scores = self.attention(x).squeeze(-1)          # [batch, seq]
-        weights = torch.softmax(scores, dim=1).unsqueeze(-1)  # [batch, seq, 1]
-        return (x * weights).sum(dim=1)  # [batch, embed_dim]
-    
+        _, h = self.gru(x)           # h: [2, batch, hidden_dim]
+        h = torch.cat(list(h), dim=-1)  # [batch, hidden_dim*2]
+        return self.projection(h)
 
 def get_model():
     model = MySentenceEmbedding()

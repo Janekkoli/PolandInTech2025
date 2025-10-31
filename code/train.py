@@ -41,7 +41,7 @@ model = SentenceEmbedingClosnesnessModel()
 criterion = nn.MSELoss()    #nn.BCEWithLogitsLoss()   # or MSELoss, depending on target
 optimizer = optim.Adam(model.parameters(), lr=0.0005) #here i should try different optimizers and learning rates
 
-num_epochs = 200
+num_epochs = 100
 batch_size = 32
 
 trainer = Trainer(model, optimizer, criterion)
